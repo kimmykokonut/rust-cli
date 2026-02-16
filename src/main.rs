@@ -48,26 +48,30 @@ fn get_files(path: &Path) -> Vec<FileEntry> {
     if let Ok(read_dir) = fs::read_dir(path) {
         for entry in read_dir{
             if let Ok(file) = entry {
-                if let Ok(meta) = fs::metadata(&file.path()) {
-                    data.push(
-                    FileEntry {
-                        name: file
-                        .file_name()
-                        .into_string()
-                        .unwrap_or("unknown name".into()),
-                        e_type: if meta.is_dir() {
-                            EntryType::Dir
-                        } else {
-                            EntryType::File
-                        },
-                        len_bytes: meta.len(),
-                        modified: "".to_string(),
-                    });
-                }
+               map_data(file, &mut data);
 
             }
         }
     }
     data // this returns the vector.
+}
+
+fn map_data(file: fs::DirEntry, data: &mut Vec<FileEntry>) {
+    if let Ok(meta) = fs::metadata(&file.path()) {
+    data.push(
+    FileEntry {
+        name: file
+        .file_name()
+        .into_string()
+        .unwrap_or("unknown name".into()),
+        e_type: if meta.is_dir() {
+            EntryType::Dir
+        } else {
+            EntryType::File
+        },
+        len_bytes: meta.len(),
+        modified: "".to_string(),
+    });
+}
 }
 }
