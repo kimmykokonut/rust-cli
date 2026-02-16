@@ -2,17 +2,22 @@ use clap::Parser;
 use owo_colors::OwoColorize;
 use std::{fs, path::{Path, PathBuf}};
 use strum::Display;
+use tabled::{Tabled, Table, settings::{Style, Color, object::Columns, object::Rows}};
+use chrono::{DateTime, Utc};
 
-#[derive(Debug, Display, Clone)]
+#[derive(Debug, Display)]
 enum EntryType {
     File,
     Dir,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Tabled)]
 struct FileEntry {
+    #[tabled{rename="Name"}]
     name:String,
+    #[tabled{rename="Type"}]
     e_type: EntryType,
+    #[tabled{rename="Size B"}]
     len_bytes:u64,
     modified:String,
 
@@ -31,17 +36,24 @@ fn main() {
 
     if let Ok(does_exist) = fs::exists(&path) {
         if does_exist {
-            for file in get_files(&path) {
-                println!("{:?}", file)
-            }
+            let get_files = get_files(&path);
+            let mut table = Table::new(get_files);
+            table.with(Style::rounded());
+            table.modify(Columns::first(), Color::FG_BRIGHT_CYAN);
+            table.modify(Columns::one(2), Color::FG_BRIGHT_MAGENTA);
+            table.modify(Columns::one(3), Color::FG_BRIGHT_YELLOW);
+            table.modify(Rows::first(), Color::FG_BRIGHT_GREEN);
+            println!("{}", table)
+            // note: before added tabled crate
+            // for file in get_files(&path) {
+            //     println!("{:?}", file)
+            // }
         } else {
             println!("{}", "Path does not exist".red());
         }
     } else {
         println!("{}", "error reading directory".blue())
     }
-    // println!("Hello, world!");
-    // println!("{}", path.display());
 
 fn get_files(path: &Path) -> Vec<FileEntry> {
     let mut data = Vec::default();
@@ -70,7 +82,12 @@ fn map_data(file: fs::DirEntry, data: &mut Vec<FileEntry>) {
             EntryType::File
         },
         len_bytes: meta.len(),
-        modified: "".to_string(),
+        modified: if let Ok(modi) = meta.modified() {
+            let date:DateTime<Utc>= modi.into();
+            format!("{}", date.format("%a %b %e %Y"))
+        } else {
+            String::default()
+        },
     });
 }
 }
