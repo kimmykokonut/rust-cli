@@ -1,4 +1,4 @@
-# Mini CLI with Rust
+# Mini CLI with Rust: `ls` command made pretty
 
 followed [YouTube tutorial](https://www.youtube.com/watch?v=5UA9UWWAagc)
 
